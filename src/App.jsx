@@ -79,7 +79,7 @@ function App() {
     }
 
     setIsCreating(true);
-    const playlistName = `Text to Spotify - ${new Date().toLocaleDateString()}`;
+    const playlistName = `Text2Playlist - ${new Date().toLocaleDateString()}`;
     const playlist = await createPlaylist(token, userProfile.id, playlistName);
 
     if (playlist) {
@@ -117,7 +117,7 @@ function App() {
         <header className="flex justify-between items-center pb-6 border-b">
           <div className="flex items-center space-x-2">
             <Music className="h-8 w-8 text-green-500" />
-            <h1 className="text-3xl font-bold tracking-tight">Text to Spotify</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Text2Playlist</h1>
           </div>
           <div className="flex items-center space-x-4">
             {userProfile && (
