@@ -6,6 +6,18 @@ import SongInput from "@/components/SongInput";
 import Results from "@/components/Results";
 import { Button } from "@/components/ui/button";
 import { Loader2, Music, LogOut } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -16,6 +28,8 @@ function App() {
   const [userProfile, setUserProfile] = useState(null);
   const [selectedPlatform, setSelectedPlatform] = useState(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [playlistName, setPlaylistName] = useState("");
 
   useEffect(() => {
     const initAuth = async () => {
@@ -87,28 +101,36 @@ function App() {
     setIsSearching(false);
   };
 
-  const handleCreatePlaylist = async () => {
+  const handleCreatePlaylist = () => {
     if (!userProfile || results.length === 0) return;
     
     const validTracks = results.filter(r => r.track).map(r => r.track.uri);
     if (validTracks.length === 0) {
-      alert("No valid tracks found to add to playlist.");
+      toast.error("No valid tracks found to add to playlist.");
       return;
     }
 
+    setPlaylistName(`Text2Playlist - ${new Date().toLocaleDateString()}`);
+    setIsDialogOpen(true);
+  };
+
+  const confirmCreatePlaylist = async () => {
+    if (!playlistName.trim()) return;
+
     setIsCreating(true);
-    const playlistName = `Text2Playlist - ${new Date().toLocaleDateString()}`;
+    const validTracks = results.filter(r => r.track).map(r => r.track.uri);
     const playlist = await createPlaylist(token, userProfile.id, playlistName);
 
     if (playlist) {
       const success = await addTracksToPlaylist(token, playlist.id, validTracks);
       if (success) {
-        alert(`Playlist "${playlistName}" created with ${validTracks.length} songs!`);
+        toast.success(`Playlist "${playlistName}" created with ${validTracks.length} songs!`);
+        setIsDialogOpen(false);
       } else {
-        alert("Created playlist but failed to add tracks.");
+        toast.error("Created playlist but failed to add tracks.");
       }
     } else {
-      alert("Failed to create playlist.");
+      toast.error("Failed to create playlist.");
     }
     setIsCreating(false);
   };
@@ -200,6 +222,44 @@ function App() {
           </div>
         </main>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create Playlist</DialogTitle>
+            <DialogDescription>
+              Enter a name for your new Spotify playlist.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={playlistName}
+                onChange={(e) => setPlaylistName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button onClick={confirmCreatePlaylist} disabled={isCreating || !playlistName.trim()}>
+              {isCreating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Toaster />
     </div>
   );
 }
