@@ -15,33 +15,51 @@ function App() {
   const [isCreating, setIsCreating] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [selectedPlatform, setSelectedPlatform] = useState(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    const hash = getTokenFromUrl();
-    const _token = hash.access_token;
+    const initAuth = async () => {
+      const hash = getTokenFromUrl();
+      const _token = hash.access_token;
 
-    if (_token) {
-      setToken(_token);
-      localStorage.setItem("spotify_token", _token);
-      window.history.pushState({}, null, "/spotify");
-      // If we have a token, we can assume the user selected Spotify (or we are restoring a session)
-      setSelectedPlatform('spotify');
-    } else {
-      const storedToken = localStorage.getItem("spotify_token");
-      if (storedToken) {
-        setToken(storedToken);
+      if (_token) {
+        // Fresh login from redirect
+        setToken(_token);
+        localStorage.setItem("spotify_token", _token);
+        window.history.pushState({}, null, "/spotify");
         setSelectedPlatform('spotify');
-      } else if (window.location.pathname.startsWith('/spotify')) {
-        setSelectedPlatform('spotify');
+        
+        // Fetch profile immediately
+        const profile = await getCurrentUserProfile(_token);
+        if (profile) {
+          setUserProfile(profile);
+        }
+      } else {
+        // Check for stored token
+        const storedToken = localStorage.getItem("spotify_token");
+        if (storedToken) {
+          // Validate token by fetching profile
+          const profile = await getCurrentUserProfile(storedToken);
+          if (profile) {
+            setToken(storedToken);
+            setUserProfile(profile);
+            setSelectedPlatform('spotify');
+          } else {
+            // Token is invalid/expired
+            localStorage.removeItem("spotify_token");
+            if (window.location.pathname.startsWith('/spotify')) {
+              setSelectedPlatform('spotify');
+            }
+          }
+        } else if (window.location.pathname.startsWith('/spotify')) {
+          setSelectedPlatform('spotify');
+        }
       }
-    }
-  }, []);
+      setIsInitializing(false);
+    };
 
-  useEffect(() => {
-    if (token) {
-      getCurrentUserProfile(token).then(setUserProfile);
-    }
-  }, [token]);
+    initAuth();
+  }, []);
 
   const handleLogout = () => {
     setToken(null);
@@ -94,6 +112,14 @@ function App() {
     }
     setIsCreating(false);
   };
+
+  if (isInitializing) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+      </div>
+    );
+  }
 
   if (!token) {
     if (!selectedPlatform) {
