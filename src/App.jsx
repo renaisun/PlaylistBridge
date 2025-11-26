@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getTokenFromUrl, searchTrack, createPlaylist, addTracksToPlaylist, getCurrentUserProfile } from "@/services/spotify";
 import Login from "@/components/Login";
+import PlatformSelector from "@/components/PlatformSelector";
 import SongInput from "@/components/SongInput";
 import Results from "@/components/Results";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ function App() {
   const [isSearching, setIsSearching] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
+  const [selectedPlatform, setSelectedPlatform] = useState(null);
 
   useEffect(() => {
     const hash = getTokenFromUrl();
@@ -21,11 +23,16 @@ function App() {
     if (_token) {
       setToken(_token);
       localStorage.setItem("spotify_token", _token);
-      window.history.pushState({}, null, "/");
+      window.history.pushState({}, null, "/spotify");
+      // If we have a token, we can assume the user selected Spotify (or we are restoring a session)
+      setSelectedPlatform('spotify');
     } else {
       const storedToken = localStorage.getItem("spotify_token");
       if (storedToken) {
         setToken(storedToken);
+        setSelectedPlatform('spotify');
+      } else if (window.location.pathname.startsWith('/spotify')) {
+        setSelectedPlatform('spotify');
       }
     }
   }, []);
@@ -41,6 +48,8 @@ function App() {
     localStorage.removeItem("spotify_token");
     setResults([]);
     setInput("");
+    setSelectedPlatform(null);
+    window.history.pushState({}, null, "/");
   };
 
   const handleSearch = async () => {
@@ -87,7 +96,19 @@ function App() {
   };
 
   if (!token) {
-    return <Login />;
+    if (!selectedPlatform) {
+      return <PlatformSelector onSelect={(platform) => {
+        setSelectedPlatform(platform);
+        if (platform === 'spotify') {
+          window.history.pushState({}, null, "/spotify");
+        }
+      }} />;
+    }
+    if (selectedPlatform === 'spotify') {
+      return <Login />;
+    }
+    // Future platforms can be handled here
+    return null;
   }
 
   return (

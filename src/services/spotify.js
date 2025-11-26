@@ -1,5 +1,5 @@
 const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
-const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI || window.location.origin + "/callback";
+const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI || window.location.origin + "/spotify/callback";
 const SCOPES = [
   "playlist-modify-public",
   "playlist-modify-private",
