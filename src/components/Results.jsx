@@ -20,7 +20,7 @@ const Results = ({ results, progress, isSearching }) => {
         )}
       </CardHeader>
       <CardContent className="flex-1 p-0 overflow-hidden">
-        <ScrollArea className="h-[300px] w-full px-4">
+        <ScrollArea className="h-full w-full px-4">
           <div className="space-y-4 pb-4">
             {results.map((item, index) => (
               <div key={index} className="flex items-start space-x-3 p-3 rounded-lg border bg-card text-card-foreground shadow-sm">

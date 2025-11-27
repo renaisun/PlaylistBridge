@@ -30,6 +30,7 @@ function App() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [playlistName, setPlaylistName] = useState("");
+  const [activeSection, setActiveSection] = useState('input'); // 'input' | 'results'
 
   const [progress, setProgress] = useState(0);
 
@@ -91,6 +92,7 @@ function App() {
     setIsSearching(true);
     setResults([]);
     setProgress(0);
+    setActiveSection('results');
 
     const lines = input.split("\n").filter((line) => line.trim() !== "");
     let processedCount = 0;
@@ -165,7 +167,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-[95%] mx-auto space-y-8">
         <header className="flex justify-between items-center pb-6 border-b">
           <div className="flex items-center space-x-2">
             <Music className="h-8 w-8 text-green-500" />
@@ -184,44 +186,91 @@ function App() {
           </div>
         </header>
 
-        <main className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <SongInput value={input} onChange={setInput} />
-            <Button 
-              className="w-full" 
-              size="lg" 
-              onClick={handleSearch} 
-              disabled={isSearching || !input.trim()}
-            >
-              {isSearching ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Searching...
-                </>
-              ) : (
-                "Search Spotify"
-              )}
-            </Button>
+        <main className="flex flex-col md:flex-row gap-6 transition-all duration-300 ease-in-out h-[calc(100vh-200px)]">
+          {/* Input Section */}
+          <div 
+            className={`
+              transition-all duration-500 ease-in-out
+              ${activeSection === 'results' ? 'w-full md:w-16 cursor-pointer hover:bg-accent/50 rounded-lg' : 'w-full md:flex-1'}
+              flex flex-col
+            `}
+            onClick={() => activeSection === 'results' && setActiveSection('input')}
+          >
+            {activeSection === 'results' ? (
+              <div className="h-full flex flex-col items-center py-8 space-y-4 text-muted-foreground">
+                <div className="writing-mode-vertical rotate-180 text-lg font-semibold tracking-widest whitespace-nowrap">
+                  INPUT SONGS
+                </div>
+                <Music className="h-6 w-6" />
+              </div>
+            ) : (
+              <div className="space-y-4 h-full flex flex-col">
+                <div className="flex justify-between items-center md:hidden">
+                   {/* Mobile only header if needed, or keep clean */}
+                </div>
+                <div className="flex-1">
+                  <SongInput value={input} onChange={setInput} />
+                </div>
+                <Button 
+                  className="w-full" 
+                  size="lg" 
+                  onClick={handleSearch} 
+                  disabled={isSearching || !input.trim()}
+                >
+                  {isSearching ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    "Search Spotify"
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
 
-          <div className="space-y-4">
-            <Results results={results} progress={progress} isSearching={isSearching} />
-            {results.length > 0 && (
-              <Button 
-                className="w-full bg-green-600 hover:bg-green-700 text-white" 
-                size="lg"
-                onClick={handleCreatePlaylist}
-                disabled={isCreating}
-              >
-                {isCreating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating Playlist...
-                  </>
-                ) : (
-                  `Create Playlist with ${results.filter(r => r.track).length} Songs`
+          {/* Results Section */}
+          <div 
+            className={`
+              transition-all duration-500 ease-in-out
+              ${activeSection === 'input' ? 'w-full md:w-16 cursor-pointer hover:bg-accent/50 rounded-lg' : 'w-full md:flex-1'}
+              flex flex-col
+            `}
+            onClick={() => activeSection === 'input' && setActiveSection('results')}
+          >
+            {activeSection === 'input' ? (
+              <div className="h-full flex flex-col items-center py-8 space-y-4 text-muted-foreground">
+                <div className="writing-mode-vertical rotate-180 text-lg font-semibold tracking-widest whitespace-nowrap">
+                  RESULTS
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-xs font-mono">{results.length}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 h-full flex flex-col">
+                <div className="flex-1 overflow-hidden">
+                   <Results results={results} progress={progress} isSearching={isSearching} />
+                </div>
+                {results.length > 0 && (
+                  <Button 
+                    className="w-full bg-green-600 hover:bg-green-700 text-white" 
+                    size="lg"
+                    onClick={handleCreatePlaylist}
+                    disabled={isCreating}
+                  >
+                    {isCreating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Playlist...
+                      </>
+                    ) : (
+                      `Create Playlist with ${results.filter(r => r.track).length} Songs`
+                    )}
+                  </Button>
                 )}
-              </Button>
+              </div>
             )}
           </div>
         </main>
