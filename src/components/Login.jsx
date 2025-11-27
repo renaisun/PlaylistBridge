@@ -17,7 +17,7 @@ const Login = () => {
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Text2Playlist</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">PlaylistBridge</CardTitle>
           <CardDescription className="text-center">
             Connect your Spotify account to get started
           </CardDescription>

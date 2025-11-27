@@ -70,7 +70,7 @@ export const createPlaylist = async (token, userId, name) => {
         },
         body: JSON.stringify({
           name: name,
-          description: "Created with Text2Playlist",
+          description: "Created with PlaylistBridge",
           public: false,
         }),
       }

@@ -51,8 +51,8 @@ function App() {
         if (profile) {
           setUserProfile(profile);
         }
-      } else {
-        // Check for stored token
+      } else if (window.location.pathname.startsWith('/spotify')) {
+        // Only check for stored token if we are on the spotify route
         const storedToken = localStorage.getItem("spotify_token");
         if (storedToken) {
           // Validate token by fetching profile
@@ -64,14 +64,13 @@ function App() {
           } else {
             // Token is invalid/expired
             localStorage.removeItem("spotify_token");
-            if (window.location.pathname.startsWith('/spotify')) {
-              setSelectedPlatform('spotify');
-            }
+            setSelectedPlatform('spotify');
           }
-        } else if (window.location.pathname.startsWith('/spotify')) {
+        } else {
           setSelectedPlatform('spotify');
         }
       }
+      // If at root /, do nothing (let PlatformSelector show)
       setIsInitializing(false);
     };
 
@@ -116,7 +115,7 @@ function App() {
       return;
     }
 
-    setPlaylistName(`Text2Playlist - ${new Date().toLocaleDateString()}`);
+    setPlaylistName(`PlaylistBridge - ${new Date().toLocaleDateString()}`);
     setIsDialogOpen(true);
   };
 
@@ -151,10 +150,24 @@ function App() {
 
   if (!token) {
     if (!selectedPlatform) {
-      return <PlatformSelector onSelect={(platform) => {
-        setSelectedPlatform(platform);
+      return <PlatformSelector onSelect={async (platform) => {
         if (platform === 'spotify') {
           window.history.pushState({}, null, "/spotify");
+          setSelectedPlatform('spotify');
+          
+          // Check for stored token when user explicitly selects Spotify
+          const storedToken = localStorage.getItem("spotify_token");
+          if (storedToken) {
+            const profile = await getCurrentUserProfile(storedToken);
+            if (profile) {
+              setToken(storedToken);
+              setUserProfile(profile);
+            } else {
+              localStorage.removeItem("spotify_token");
+            }
+          }
+        } else {
+          setSelectedPlatform(platform);
         }
       }} />;
     }
@@ -171,7 +184,7 @@ function App() {
         <header className="flex justify-between items-center pb-6 border-b">
           <div className="flex items-center space-x-2">
             <Music className="h-8 w-8 text-green-500" />
-            <h1 className="text-3xl font-bold tracking-tight">Text2Playlist</h1>
+            <h1 className="text-3xl font-bold tracking-tight">PlaylistBridge</h1>
           </div>
           <div className="flex items-center space-x-4">
             {userProfile && (
