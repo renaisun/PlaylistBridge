@@ -1,3 +1,5 @@
+[中文](README_cn.md)
+
 ## What is this?
 
 This tool convert 'song - artist' pairs into Spotify playlists.
