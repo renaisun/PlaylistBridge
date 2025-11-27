@@ -56,3 +56,6 @@ Once you have your Client ID, you can use it in the PlaylistBridge app:
 
 Your credentials will be saved locally in your browser, so you don't need to enter them every time.
 
+## TODO:
+
+- [ ] measure similarity between input songs and matched songs
