@@ -31,6 +31,8 @@ function App() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [playlistName, setPlaylistName] = useState("");
 
+  const [progress, setProgress] = useState(0);
+
   useEffect(() => {
     const initAuth = async () => {
       const hash = getTokenFromUrl();
@@ -88,16 +90,18 @@ function App() {
     if (!input.trim()) return;
     setIsSearching(true);
     setResults([]);
+    setProgress(0);
 
     const lines = input.split("\n").filter((line) => line.trim() !== "");
-    const newResults = [];
+    let processedCount = 0;
 
     for (const line of lines) {
       const track = await searchTrack(token, line.trim());
-      newResults.push({ original: line, track });
+      setResults(prev => [...prev, { original: line, track }]);
+      processedCount++;
+      setProgress(Math.round((processedCount / lines.length) * 100));
     }
 
-    setResults(newResults);
     setIsSearching(false);
   };
 
@@ -201,7 +205,7 @@ function App() {
           </div>
 
           <div className="space-y-4">
-            <Results results={results} />
+            <Results results={results} progress={progress} isSearching={isSearching} />
             {results.length > 0 && (
               <Button 
                 className="w-full bg-green-600 hover:bg-green-700 text-white" 

@@ -1,9 +1,10 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Check, X, ExternalLink } from "lucide-react";
 
-const Results = ({ results }) => {
+const Results = ({ results, progress, isSearching }) => {
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
@@ -11,6 +12,12 @@ const Results = ({ results }) => {
           <span>Results</span>
           <Badge variant="secondary">{results.length} items</Badge>
         </CardTitle>
+        {(isSearching || progress > 0) && (
+          <div className="mt-2 space-y-1">
+            <Progress value={progress} className="h-2" />
+            <p className="text-xs text-muted-foreground text-right">{progress}%</p>
+          </div>
+        )}
       </CardHeader>
       <CardContent className="flex-1 p-0 overflow-hidden">
         <ScrollArea className="h-[300px] w-full px-4">
@@ -53,9 +60,14 @@ const Results = ({ results }) => {
                 )}
               </div>
             ))}
-            {results.length === 0 && (
+            {results.length === 0 && !isSearching && (
               <div className="text-center text-muted-foreground py-8">
                 No results yet. Enter songs and click search.
+              </div>
+            )}
+            {isSearching && results.length === 0 && (
+              <div className="text-center text-muted-foreground py-8">
+                Searching...
               </div>
             )}
           </div>
