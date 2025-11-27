@@ -5,7 +5,7 @@ import PlatformSelector from "@/components/PlatformSelector";
 import SongInput from "@/components/SongInput";
 import Results from "@/components/Results";
 import { Button } from "@/components/ui/button";
-import { Loader2, Music, LogOut } from "lucide-react";
+import { Loader2, Music, LogOut, Download } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,7 @@ function App() {
   const [playlistName, setPlaylistName] = useState("");
   const [activeSection, setActiveSection] = useState('input'); // 'input' | 'results'
   const [progress, setProgress] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
   const authCalled = useRef(false);
 
   useEffect(() => {
@@ -126,6 +127,33 @@ function App() {
     }
 
     setIsSearching(false);
+  };
+
+  const handleExport = async () => {
+    if (results.length === 0) return;
+
+    setIsExporting(true);
+    // Add a small delay to show the spinner
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const exportData = results.map(result => ({
+      query: result.original,
+      name: result.track ? result.track.name : null,
+      artists: result.track ? result.track.artists.map(a => a.name) : null
+    }));
+
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "spotify_search_results.json";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    setIsExporting(false);
   };
 
   const handleCreatePlaylist = () => {
@@ -289,21 +317,41 @@ function App() {
                    <Results results={results} progress={progress} isSearching={isSearching} />
                 </div>
                 {results.length > 0 && (
-                  <Button 
-                    className="w-full bg-green-600 hover:bg-green-700 text-white" 
-                    size="lg"
-                    onClick={handleCreatePlaylist}
-                    disabled={isCreating}
-                  >
-                    {isCreating ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating Playlist...
-                      </>
-                    ) : (
-                      `Create Playlist with ${results.filter(r => r.track).length} Songs`
-                    )}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white" 
+                      size="lg"
+                      onClick={handleCreatePlaylist}
+                      disabled={isCreating}
+                    >
+                      {isCreating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating Playlist...
+                        </>
+                      ) : (
+                        `Create Playlist with ${results.filter(r => r.track).length} Songs`
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={handleExport}
+                      disabled={isExporting}
+                    >
+                      {isExporting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Exporting...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="mr-2 h-4 w-4" />
+                          Export JSON
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 )}
               </div>
             )}

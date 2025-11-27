@@ -106,9 +106,22 @@ export const getAccessToken = async (code) => {
 export const searchTrack = async (token, query) => {
   if (!query) return null;
   try {
+    let q = query;
+    // const separator = " - ";
+    // if (query.includes(separator)) {
+    //   const lastSeparatorIndex = query.lastIndexOf(separator);
+    //   if (lastSeparatorIndex !== -1) {
+    //     const trackName = query.substring(0, lastSeparatorIndex).trim();
+    //     const artistName = query.substring(lastSeparatorIndex + separator.length).trim();
+    //     if (trackName && artistName) {
+    //       q = `${trackName}%20artist:${artistName}`;
+    //     }
+    //   }
+    // }
+
     const response = await fetch(
       `https://api.spotify.com/v1/search?q=${encodeURIComponent(
-        query
+        q
       )}&type=track&limit=1`,
       {
         headers: {
