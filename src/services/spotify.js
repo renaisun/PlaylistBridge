@@ -25,12 +25,20 @@ const base64encode = (input) => {
     .replace(/\//g, '_');
 }
 
-export const redirectToAuthCodeFlow = async (clientId) => {
+export const redirectToAuthCodeFlow = async (clientId, redirectUri = null) => {
   const codeVerifier = generateRandomString(64);
   const hashed = await sha256(codeVerifier);
   const codeChallenge = base64encode(hashed);
 
   window.localStorage.setItem('code_verifier', codeVerifier);
+  window.localStorage.setItem('spotify_client_id', clientId);
+  if (redirectUri) {
+    window.localStorage.setItem('spotify_redirect_uri', redirectUri);
+  } else {
+    window.localStorage.removeItem('spotify_redirect_uri');
+  }
+
+  const effectiveRedirectUri = redirectUri || REDIRECT_URI;
 
   const params =  new URLSearchParams({
     response_type: 'code',
@@ -38,7 +46,7 @@ export const redirectToAuthCodeFlow = async (clientId) => {
     scope: SCOPES.join(" "),
     code_challenge_method: 'S256',
     code_challenge: codeChallenge,
-    redirect_uri: REDIRECT_URI,
+    redirect_uri: effectiveRedirectUri,
   });
 
   document.location = `${AUTH_ENDPOINT}?${params.toString()}`;
@@ -56,7 +64,11 @@ export const getTokenFromUrl = () => {
 };
 
 export const getAccessToken = async (code) => {
-  const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+  const storedClientId = window.localStorage.getItem('spotify_client_id');
+  const storedRedirectUri = window.localStorage.getItem('spotify_redirect_uri');
+  
+  const clientId = storedClientId || import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+  const redirectUri = storedRedirectUri || REDIRECT_URI;
   const codeVerifier = localStorage.getItem('code_verifier');
 
   if (!codeVerifier) {
@@ -73,7 +85,7 @@ export const getAccessToken = async (code) => {
       body: new URLSearchParams({
         grant_type: "authorization_code",
         code,
-        redirect_uri: REDIRECT_URI,
+        redirect_uri: redirectUri,
         client_id: clientId,
         code_verifier: codeVerifier,
       }),
