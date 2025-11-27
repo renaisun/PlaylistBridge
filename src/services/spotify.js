@@ -164,16 +164,20 @@ export const createPlaylist = async (token, userId, name) => {
 
 export const addTracksToPlaylist = async (token, playlistId, uris) => {
   try {
-    await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        uris: uris,
-      }),
-    });
+    const chunkSize = 100;
+    for (let i = 0; i < uris.length; i += chunkSize) {
+      const chunk = uris.slice(i, i + chunkSize);
+      await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uris: chunk,
+        }),
+      });
+    }
     return true;
   } catch (error) {
     console.error("Error adding tracks:", error);

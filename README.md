@@ -48,6 +48,9 @@ To connect PlaylistBridge to Spotify, you need a Client ID. Follow these steps:
 6.  Save the app.
 7.  On your app's dashboard page, look for the **Client ID**.
 
+> [!NOTE]
+> If the spotify account used to create App is different from the one you use to login PlaylistBridge, you may need to grant the permission under `User Management` in Spotify Developer Dashboard.
+
 ### 2. Use Custom Credentials in PlaylistBridge
 
 Once you have your Client ID, you can use it in the PlaylistBridge app:
@@ -64,4 +67,5 @@ Your credentials will be saved locally in your browser, so you don't need to ent
 
 ## TODO:
 
+- [ ] rate limit handling
 - [ ] measure similarity between input songs and matched songs

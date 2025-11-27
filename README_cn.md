@@ -45,6 +45,9 @@
 6.  保存应用。
 7.  在你的应用仪表板页面上，找到 **Client ID**。
 
+> [!NOTE]
+> 如果用于创建 App 的 Spotify 账号与登录 PlaylistBridge 的账号不同，你可能需要在 Spotify Developer Dashboard 的 `User Management` 下授予权限。
+
 ### 2. 在 PlaylistBridge 中使用自定义凭据
 
 一旦你有了 Client ID，就可以在 PlaylistBridge 应用中使用它：
@@ -61,4 +64,5 @@
 
 ## 待办事项：
 
+- [ ] 速率限制处理
 - [ ] 测量输入歌曲与匹配歌曲之间的相似度
