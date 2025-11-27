@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getTokenFromUrl, searchTrack, createPlaylist, addTracksToPlaylist, getCurrentUserProfile, getAccessToken } from "@/services/spotify";
 import Login from "@/components/Login";
 import PlatformSelector from "@/components/PlatformSelector";
@@ -31,11 +31,14 @@ function App() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [playlistName, setPlaylistName] = useState("");
   const [activeSection, setActiveSection] = useState('input'); // 'input' | 'results'
-
   const [progress, setProgress] = useState(0);
+  const authCalled = useRef(false);
 
   useEffect(() => {
     const initAuth = async () => {
+      if (authCalled.current) return;
+      authCalled.current = true;
+
       const hash = getTokenFromUrl();
       const _token = hash.access_token;
       const searchParams = new URLSearchParams(window.location.search);
