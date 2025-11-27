@@ -2,6 +2,17 @@
 
 I found that existing tools like Spotlistr and Tune My Music often don’t handle Japanese songs well.
 
+Test Dataset:
+```
+嘘つき - あたらよ
+トワイライト - shallm
+アルジャーノン - ヨルシカ
+晩餐歌 - Bansanka - tuki.
+ヒッチコック - ヨルシカ
+夜行 - ヨルシカ
+嘘月 - ヨルシカ
+```
+
 This tool serves as a companion to [GoMusic](https://github.com/Bistutu/GoMusic)
 , which parses Netease playlists into clean “song – artist” pairs, making it easier to achieve accurate conversions.
 
