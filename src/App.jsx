@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getTokenFromUrl, searchTrack, createPlaylist, addTracksToPlaylist, getCurrentUserProfile } from "@/services/spotify";
+import { getTokenFromUrl, searchTrack, createPlaylist, addTracksToPlaylist, getCurrentUserProfile, getAccessToken } from "@/services/spotify";
 import Login from "@/components/Login";
 import PlatformSelector from "@/components/PlatformSelector";
 import SongInput from "@/components/SongInput";
@@ -38,18 +38,37 @@ function App() {
     const initAuth = async () => {
       const hash = getTokenFromUrl();
       const _token = hash.access_token;
+      const searchParams = new URLSearchParams(window.location.search);
+      const code = searchParams.get("code");
+      console.log("code", code);
 
       if (_token) {
-        // Fresh login from redirect
+        // Fresh login from redirect (Implicit Flow - Legacy support)
         setToken(_token);
         localStorage.setItem("spotify_token", _token);
         window.history.pushState({}, null, "/spotify");
         setSelectedPlatform('spotify');
         
-        // Fetch profile immediately
         const profile = await getCurrentUserProfile(_token);
         if (profile) {
           setUserProfile(profile);
+        }
+      } else if (code) {
+        // Fresh login from redirect (PKCE Flow)
+        const data = await getAccessToken(code);
+        if (data && data.access_token) {
+          setToken(data.access_token);
+          localStorage.setItem("spotify_token", data.access_token);
+          window.history.pushState({}, null, "/spotify");
+          setSelectedPlatform('spotify');
+
+          const profile = await getCurrentUserProfile(data.access_token);
+          if (profile) {
+            setUserProfile(profile);
+          }
+        } else {
+           // Failed to exchange token
+           toast.error("Failed to authenticate with Spotify");
         }
       } else if (window.location.pathname.startsWith('/spotify')) {
         // Only check for stored token if we are on the spotify route

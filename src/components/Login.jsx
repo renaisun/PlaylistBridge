@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { loginUrl } from "@/services/spotify";
+import { redirectToAuthCodeFlow } from "@/services/spotify";
 
 const Login = () => {
   const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 
   const handleLogin = () => {
     if (clientId) {
-      window.location.href = loginUrl(clientId);
+      redirectToAuthCodeFlow(clientId);
     } else {
       alert("Please set VITE_SPOTIFY_CLIENT_ID in your .env file");
     }

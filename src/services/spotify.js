@@ -6,11 +6,43 @@ const SCOPES = [
   "user-read-private",
 ];
 
-export const loginUrl = (clientId) => {
-  return `${AUTH_ENDPOINT}?client_id=${clientId}&redirect_uri=${encodeURIComponent(
-    REDIRECT_URI
-  )}&scope=${encodeURIComponent(SCOPES.join(" "))}&response_type=token&show_dialog=true`;
-};
+const generateRandomString = (length) => {
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const values = crypto.getRandomValues(new Uint8Array(length));
+  return values.reduce((acc, x) => acc + possible[x % possible.length], "");
+}
+
+const sha256 = async (plain) => {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(plain)
+  return window.crypto.subtle.digest('SHA-256', data)
+}
+
+const base64encode = (input) => {
+  return btoa(String.fromCharCode(...new Uint8Array(input)))
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+}
+
+export const redirectToAuthCodeFlow = async (clientId) => {
+  const codeVerifier = generateRandomString(64);
+  const hashed = await sha256(codeVerifier);
+  const codeChallenge = base64encode(hashed);
+
+  window.localStorage.setItem('code_verifier', codeVerifier);
+
+  const params =  new URLSearchParams({
+    response_type: 'code',
+    client_id: clientId,
+    scope: SCOPES.join(" "),
+    code_challenge_method: 'S256',
+    code_challenge: codeChallenge,
+    redirect_uri: REDIRECT_URI,
+  });
+
+  document.location = `${AUTH_ENDPOINT}?${params.toString()}`;
+}
 
 export const getTokenFromUrl = () => {
   return window.location.hash
@@ -21,6 +53,42 @@ export const getTokenFromUrl = () => {
       initial[parts[0]] = decodeURIComponent(parts[1]);
       return initial;
     }, {});
+};
+
+export const getAccessToken = async (code) => {
+  const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+  const codeVerifier = localStorage.getItem('code_verifier');
+
+  if (!codeVerifier) {
+      console.error("Code verifier not found");
+      return null;
+  }
+
+  try {
+    const response = await fetch("https://accounts.spotify.com/api/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: REDIRECT_URI,
+        client_id: clientId,
+        code_verifier: codeVerifier,
+      }),
+    });
+
+    const data = await response.json();
+    if (data.error) {
+        console.error("Error exchanging token:", data.error);
+        return null;
+    }
+    return data;
+  } catch (error) {
+    console.error("Error exchanging token:", error);
+    return null;
+  }
 };
 
 export const searchTrack = async (token, query) => {
