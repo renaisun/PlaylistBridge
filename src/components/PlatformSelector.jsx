@@ -7,7 +7,7 @@ const PlatformSelector = ({ onSelect }) => {
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Choose Platform</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Choose Destination Platform</CardTitle>
           <CardDescription className="text-center">
             Select your preferred music service to continue
           </CardDescription>
