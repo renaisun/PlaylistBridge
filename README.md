@@ -1,4 +1,8 @@
-# Why another playlist conversion tool?
+## What is this?
+
+This tool convert 'song - artist' pairs into Spotify playlists.
+
+## Why another playlist conversion tool?
 
 I found that existing tools like Spotlistr and Tune My Music often don’t handle Japanese songs well.
 
